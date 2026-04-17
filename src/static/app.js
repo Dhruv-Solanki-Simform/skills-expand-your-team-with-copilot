@@ -569,6 +569,25 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="share-section">
+        <button class="share-toggle-button" aria-label="Share this activity">
+          📤 Share
+        </button>
+        <div class="share-dropdown hidden">
+          <a class="share-option share-twitter" href="#" target="_blank" rel="noopener noreferrer">
+            <span class="share-icon">𝕏</span> Twitter / X
+          </a>
+          <a class="share-option share-facebook" href="#" target="_blank" rel="noopener noreferrer">
+            <span class="share-icon">f</span> Facebook
+          </a>
+          <a class="share-option share-whatsapp" href="#" target="_blank" rel="noopener noreferrer">
+            <span class="share-icon">💬</span> WhatsApp
+          </a>
+          <button class="share-option share-copy">
+            <span class="share-icon">🔗</span> Copy Link
+          </button>
+        </div>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -587,7 +606,92 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Set up share buttons
+    setupShareButtons(activityCard, name, details.description);
+
     activitiesList.appendChild(activityCard);
+  }
+
+  // Build a shareable URL for an activity
+  function buildShareUrl(activityName) {
+    const url = new URL(window.location.href);
+    url.search = "";
+    url.searchParams.set("activity", activityName);
+    return url.toString();
+  }
+
+  // Set up share buttons for an activity card
+  function setupShareButtons(card, activityName, description) {
+    const toggleBtn = card.querySelector(".share-toggle-button");
+    const dropdown = card.querySelector(".share-dropdown");
+
+    const shareUrl = buildShareUrl(activityName);
+    const shareText = `Check out this activity at Mergington High School: ${activityName} – ${description}`;
+
+    // Set share URLs
+    card.querySelector(".share-twitter").href =
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+
+    card.querySelector(".share-facebook").href =
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+
+    card.querySelector(".share-whatsapp").href =
+      `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`;
+
+    // Toggle dropdown visibility
+    toggleBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      // Close all other open dropdowns first
+      document.querySelectorAll(".share-dropdown:not(.hidden)").forEach((el) => {
+        if (el !== dropdown) {
+          el.classList.add("hidden");
+        }
+      });
+      dropdown.classList.toggle("hidden");
+    });
+
+    // Copy link button
+    card.querySelector(".share-copy").addEventListener("click", (event) => {
+      event.stopPropagation();
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        showMessage("Link copied to clipboard!", "success");
+        dropdown.classList.add("hidden");
+      }).catch(() => {
+        showMessage("Could not copy link. Please copy it manually: " + shareUrl, "info");
+        dropdown.classList.add("hidden");
+      });
+    });
+  }
+
+  // Close share dropdowns when clicking outside
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".share-dropdown:not(.hidden)").forEach((el) => {
+      el.classList.add("hidden");
+    });
+  });
+
+  // Highlight activity from URL parameter on load
+  function highlightActivityFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const activityParam = params.get("activity");
+    if (!activityParam) return;
+
+    // Wait for cards to be rendered then scroll to matching card
+    const checkInterval = setInterval(() => {
+      const cards = document.querySelectorAll(".activity-card");
+      for (const card of cards) {
+        const cardTitle = card.querySelector("h4");
+        if (cardTitle && cardTitle.textContent.trim() === activityParam) {
+          card.classList.add("activity-highlight");
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
+          clearInterval(checkInterval);
+          break;
+        }
+      }
+    }, 200);
+
+    // Stop trying after 5 seconds
+    setTimeout(() => clearInterval(checkInterval), 5000);
   }
 
   // Event listeners for search and filter
@@ -865,4 +969,5 @@ document.addEventListener("DOMContentLoaded", () => {
   checkAuthentication();
   initializeFilters();
   fetchActivities();
+  highlightActivityFromUrl();
 });
