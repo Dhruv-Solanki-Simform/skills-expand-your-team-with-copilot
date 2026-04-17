@@ -27,14 +27,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Dark mode toggle
   const darkModeToggle = document.getElementById("dark-mode-toggle");
+  const DARK_LABEL = "☀️ Light Mode";
+  const LIGHT_LABEL = "🌙 Dark Mode";
   const isDarkMode = localStorage.getItem("darkMode") === "true";
   if (isDarkMode) {
     document.body.classList.add("dark-mode");
-    darkModeToggle.textContent = "☀️ Light Mode";
+    darkModeToggle.textContent = DARK_LABEL;
+    darkModeToggle.setAttribute("aria-label", "Switch to light mode");
   }
   darkModeToggle.addEventListener("click", () => {
     const enabled = document.body.classList.toggle("dark-mode");
-    darkModeToggle.textContent = enabled ? "☀️ Light Mode" : "🌙 Dark Mode";
+    darkModeToggle.textContent = enabled ? DARK_LABEL : LIGHT_LABEL;
+    darkModeToggle.setAttribute("aria-label", enabled ? "Switch to light mode" : "Switch to dark mode");
     localStorage.setItem("darkMode", enabled);
   });
 
