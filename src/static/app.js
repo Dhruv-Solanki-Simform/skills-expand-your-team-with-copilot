@@ -25,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
 
+  // School name used in page title and share messages
+  const SCHOOL_NAME = "Mergington High School";
+
   // Activity categories with corresponding colors
   const activityTypes = {
     sports: { label: "Sports", color: "#e8f5e9", textColor: "#2e7d32" },
@@ -470,6 +473,9 @@ document.addEventListener("DOMContentLoaded", () => {
     Object.entries(filteredActivities).forEach(([name, details]) => {
       renderActivityCard(name, details);
     });
+
+    // Scroll to and highlight any activity linked via URL parameter
+    highlightActivityFromUrl();
   }
 
   // Function to render a single activity card
@@ -626,7 +632,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dropdown = card.querySelector(".share-dropdown");
 
     const shareUrl = buildShareUrl(activityName);
-    const shareText = `Check out this activity at Mergington High School: ${activityName} – ${description}`;
+    const shareText = `Check out this activity at ${SCHOOL_NAME}: ${activityName} – ${description}`;
 
     // Set share URLs
     card.querySelector(".share-twitter").href =
@@ -676,22 +682,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const activityParam = params.get("activity");
     if (!activityParam) return;
 
-    // Wait for cards to be rendered then scroll to matching card
-    const checkInterval = setInterval(() => {
-      const cards = document.querySelectorAll(".activity-card");
-      for (const card of cards) {
-        const cardTitle = card.querySelector("h4");
-        if (cardTitle && cardTitle.textContent.trim() === activityParam) {
-          card.classList.add("activity-highlight");
-          card.scrollIntoView({ behavior: "smooth", block: "center" });
-          clearInterval(checkInterval);
-          break;
-        }
+    const cards = document.querySelectorAll(".activity-card");
+    for (const card of cards) {
+      const cardTitle = card.querySelector("h4");
+      if (cardTitle && cardTitle.textContent.trim() === activityParam) {
+        card.classList.add("activity-highlight");
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+        break;
       }
-    }, 200);
-
-    // Stop trying after 5 seconds
-    setTimeout(() => clearInterval(checkInterval), 5000);
+    }
   }
 
   // Event listeners for search and filter
@@ -969,5 +968,4 @@ document.addEventListener("DOMContentLoaded", () => {
   checkAuthentication();
   initializeFilters();
   fetchActivities();
-  highlightActivityFromUrl();
 });
